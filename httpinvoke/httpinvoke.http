@@ -1,0 +1,6 @@
+@httpinvoke_HostAddress = http://localhost:5249
+
+GET {{httpinvoke_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

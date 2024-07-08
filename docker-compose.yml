@@ -1,0 +1,74 @@
+version: '3.4'  
+
+services:  
+  httpinvoke:  
+    image: ${DOCKER_REGISTRY-}httpinvoke  
+    build:  
+      context: .  
+      dockerfile: httpinvoke/Dockerfile  
+    environment:  
+      - ASPNETCORE_ENVIRONMENT=Development  
+      - ASPNETCORE_HTTPS_PORTS=443;8081
+    ports:  
+      - "5001:8081"  
+    volumes:  
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro  
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro  
+
+  httpinvoke-dapr:  
+    image: "daprio/daprd:1.13.5"  
+    command: ["./daprd",  
+      "--app-id", "httpinvoke",
+      "--app-port", "80",
+      "--log-level", "debug"]  
+    depends_on:  
+      - httpinvoke  
+    network_mode: "service:httpinvoke"  
+
+  weatherforecastapi:  
+    image: ${DOCKER_REGISTRY-}weatherforecastapi  
+    build:  
+      context: .  
+      dockerfile: weatherforecastapi/Dockerfile  
+    environment:  
+      - ASPNETCORE_ENVIRONMENT=Development  
+      - ASPNETCORE_HTTP_PORTS=80;8082  
+    ports:  
+      - "5002:8082"  
+    volumes:  
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro  
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro  
+
+  weatherforecastapi-dapr:  
+    image: "daprio/daprd:1.13.5"  
+    command: ["./daprd",  
+      "--app-id", "weatherforecastapi",  
+      "--app-port", "80",
+      "--log-level", "debug"]
+    depends_on:  
+      - weatherforecastapi  
+    network_mode: "service:weatherforecastapi"  
+
+  weatherforecastapi2:  
+    image: ${DOCKER_REGISTRY-}weatherforecastapi2  
+    build:  
+      context: .  
+      dockerfile: weatherforecastapi2/Dockerfile  
+    environment:  
+      - ASPNETCORE_ENVIRONMENT=Development  
+      - ASPNETCORE_HTTP_PORTS=80;8083  
+    ports:  
+      - "5003:8083"  
+    volumes:  
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro  
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro  
+
+  weatherforecastapi2-dapr:  
+    image: "daprio/daprd:1.13.5"  
+    command: ["./daprd",  
+      "--app-id", "weatherforecastapi2",  
+      "--app-port", "80",
+      "--log-level", "debug"]
+    depends_on:  
+      - weatherforecastapi2
+    network_mode: "service:weatherforecastapi2"  
